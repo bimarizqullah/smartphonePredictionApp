@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import re
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
@@ -13,7 +15,7 @@ st.set_page_config(page_title="Prediksi Harga Smartphone", layout="wide")
 page = st.sidebar.selectbox("Navigasi", ["Beranda", "Prediksi", "Visualisasi Data", "Tentang & Kredit"])
 
 if page == "Beranda":
-    st.title("\ud83d\udcf1 Prediksi Harga Smartphone")
+    st.title("📱 Prediksi Harga Smartphone")
     st.image("image.png", width=500, caption="Temukan Harga Smartphone Berdasarkan Spesifikasi")
     st.write("""
         Selamat datang di aplikasi *Prediksi Harga Smartphone*!  
@@ -27,8 +29,17 @@ if page == "Beranda":
         - **Evaluasi Model**: Tampilkan akurasi model dalam bentuk **Mean Absolute Error** dan **R² Score**.
     """)
 
+    st.write("""
+        ### Penjelasan Evaluasi Model
+        **Mean Absolute Error (MAE)**:  
+        MAE mengukur rata-rata kesalahan absolut antara nilai sebenarnya dan nilai prediksi.  
+        Nilai MAE yang lebih kecil menunjukkan bahwa prediksi model lebih akurat.  
+        **R² Score (Koefisien Determinasi)**:  
+        R² Score mengukur seberapa baik model dapat menjelaskan variabilitas data target.
+    """)
+
 elif page == "Prediksi":
-    st.title("\ud83d\udcca Prediksi Harga Smartphone")
+    st.title("📊 Prediksi Harga Smartphone")
 
     # Lokasi file CSV
     csv_file_path = "phone_under_20K.csv"  # Ganti dengan nama file Anda
@@ -43,7 +54,7 @@ elif page == "Prediksi":
         st.dataframe(data.head(rows_to_display))
 
         # Bersihkan data
-        data['Price'] = data['Price'].replace('[\u20ac,]', '', regex=True).astype(float)
+        data['Price'] = data['Price'].replace('[₹,]', '', regex=True).astype(float)
 
         # Ekstrak RAM dan ROM dari deskripsi
         def extract_ram(description):
@@ -83,8 +94,8 @@ elif page == "Prediksi":
         r2 = r2_score(y_test, y_pred)
 
         st.write("### Evaluasi Model")
-        st.write(f"- Mean Absolute Error: **{mae:.2f} Euro**")
-        st.write(f"- R\u00b2 Score: **{r2:.2f}**")
+        st.write(f"- Mean Absolute Error: **{mae:.2f}**")
+        st.write(f"- R² Score: **{r2:.2f}**")
 
         # Prediksi dengan input pengguna
         st.write("### Prediksi Harga Berdasarkan Input")
@@ -98,29 +109,20 @@ elif page == "Prediksi":
             input_rom = st.selectbox("ROM (GB)", options=[32, 64, 128, 256, 512, 1024])
 
         if st.button("Prediksi Harga"):
-            # Nilai tukar Euro ke Rupiah
-            euro_to_idr = 16000  # Ganti dengan nilai tukar yang relevan
-
-            # Prediksi harga dalam Euro
             prediction = model.predict(np.array([[input_rating, input_ram, input_rom]]))
-
-            # Konversi hasil prediksi ke Rupiah
-            prediction_idr = prediction[0] * euro_to_idr
-
-            # Tampilkan hasil prediksi dalam Rupiah
-            st.write(f"### Harga Prediksi: Rp {prediction_idr:,.2f}")
+            st.write(f"### Harga Prediksi: ₹{prediction[0]:,.2f}")
     except FileNotFoundError:
         st.error(f"File CSV '{csv_file_path}' tidak ditemukan. Pastikan file berada di direktori yang benar.")
 
 elif page == "Visualisasi Data":
-    st.title("\ud83d\udcca Visualisasi Data Smartphone")
+    st.title("📊 Visualisasi Data Smartphone")
 
     try:
         # Baca file CSV
         data = pd.read_csv("phone_under_20K.csv")
 
         # Bersihkan data
-        data['Price'] = data['Price'].replace('[\u20ac,]', '', regex=True).astype(float)
+        data['Price'] = data['Price'].replace('[₹,]', '', regex=True).astype(float)
 
         # Ekstrak RAM dan ROM
         data['RAM'] = data['description'].apply(lambda x: int(re.search(r'(\d+)\s?GB RAM', x).group(1)) if re.search(r'(\d+)\s?GB RAM', x) else None)
@@ -144,8 +146,9 @@ elif page == "Visualisasi Data":
     except FileNotFoundError:
         st.error("File CSV tidak ditemukan. Pastikan file berada di direktori yang benar.")
 
+
 elif page == "Tentang & Kredit":
-    st.title("\u2139\ufe0f Tentang Aplikasi")
+    st.title("ℹ️ Tentang Aplikasi")
     st.write("""
         Aplikasi ini dikembangkan untuk memberikan solusi prediksi harga smartphone dengan memanfaatkan dataset publik 
         dan teknik **Regresi Linear**.  
